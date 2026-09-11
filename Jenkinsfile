@@ -7,21 +7,16 @@ pipeline {
 
         stage('Multi-SCM Checkout') {
             steps {
-
                 dir('assignment5') {
-                    git(
-                        branch: 'master',
+                    git branch: 'master',
                         credentialsId: 'github-credentials',
                         url: 'https://github.com/arslankareem89/assignment5.git'
-                    )
                 }
 
                 dir('wink_dashboard') {
-                    git(
-                        branch: 'develop',
+                    git branch: 'develop',
                         credentialsId: 'github-credentials',
                         url: 'https://github.com/arslankareem89/wink_dashboard.git'
-                    )
                 }
 
                 sh '''
@@ -78,35 +73,46 @@ pipeline {
                     echo "===== BUILD ASSIGNMENT 5 IMAGE ====="
 
                     cd assignment5
-
                     docker build -t assignment5:latest .
 
-                    echo "===== DOCKER IMAGES ====="
                     docker images assignment5
                 '''
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
+
+                        docker tag assignment5:latest \
+                            arslankareem89/assignment5:latest
+
+                        docker push arslankareem89/assignment5:latest
+
+                        docker logout
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo '======================================'
             echo 'PIPELINE SUCCESSFUL'
-            echo 'Multi-SCM checkout: SUCCESS'
-            echo 'SonarQube scans: SUCCESS'
-            echo 'React Docker build: SUCCESS'
-            echo '======================================'
         }
 
         failure {
-            echo '======================================'
             echo 'PIPELINE FAILED'
-            echo 'Check the stage above for the failure.'
-            echo '======================================'
-        }
-
-        always {
-            echo "Build ${env.BUILD_NUMBER} completed with status: ${currentBuild.currentResult}"
         }
     }
 }
