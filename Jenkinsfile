@@ -1,3 +1,4 @@
+```groovy
 pipeline {
 
     agent {
@@ -68,5 +69,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    echo "===== BUILD ASSIGNMENT 5 IMAGE ====="
+                    cd assignment5
+                    docker build -t assignment5:latest .
+
+                    echo "===== BUILD WINK DASHBOARD IMAGE ====="
+                    cd ../wink_dashboard
+                    docker build -t wink-dashboard:latest .
+
+                    echo "===== DOCKER IMAGES ====="
+                    docker images
+                '''
+            }
+        }
     }
 }
+```
