@@ -1,6 +1,4 @@
-
 pipeline {
-
     agent {
         label 'jenkins-agent1'
     }
@@ -11,15 +9,19 @@ pipeline {
             steps {
 
                 dir('assignment5') {
-                    git branch: 'master',
+                    git(
+                        branch: 'master',
                         credentialsId: 'github-credentials',
                         url: 'https://github.com/arslankareem89/assignment5.git'
+                    )
                 }
 
                 dir('wink_dashboard') {
-                    git branch: 'develop',
+                    git(
+                        branch: 'develop',
                         credentialsId: 'github-credentials',
                         url: 'https://github.com/arslankareem89/wink_dashboard.git'
+                    )
                 }
 
                 sh '''
@@ -70,22 +72,41 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build - React') {
             steps {
                 sh '''
                     echo "===== BUILD ASSIGNMENT 5 IMAGE ====="
+
                     cd assignment5
+
                     docker build -t assignment5:latest .
 
-                    echo "===== BUILD WINK DASHBOARD IMAGE ====="
-                    cd ../wink_dashboard
-                    docker build -t wink-dashboard:latest .
-
                     echo "===== DOCKER IMAGES ====="
-                    docker images
+                    docker images assignment5
                 '''
             }
         }
     }
-}
 
+    post {
+        success {
+            echo '======================================'
+            echo 'PIPELINE SUCCESSFUL'
+            echo 'Multi-SCM checkout: SUCCESS'
+            echo 'SonarQube scans: SUCCESS'
+            echo 'React Docker build: SUCCESS'
+            echo '======================================'
+        }
+
+        failure {
+            echo '======================================'
+            echo 'PIPELINE FAILED'
+            echo 'Check the stage above for the failure.'
+            echo '======================================'
+        }
+
+        always {
+            echo "Build ${env.BUILD_NUMBER} completed with status: ${currentBuild.currentResult}"
+        }
+    }
+}
