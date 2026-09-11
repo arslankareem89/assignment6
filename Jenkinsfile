@@ -1,4 +1,5 @@
 pipeline {
+
     agent {
         label 'jenkins-agent1'
     }
@@ -30,7 +31,7 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube - Assignment 5') {
             steps {
                 dir('assignment5/react-app') {
                     script {
@@ -42,6 +43,25 @@ pipeline {
                                 -Dsonar.projectKey=assignment5 \
                                 -Dsonar.projectName=assignment5 \
                                 -Dsonar.sources=.
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube - Wink Dashboard') {
+            steps {
+                dir('wink_dashboard') {
+                    script {
+                        def scannerHome = tool 'sonar-scanner'
+
+                        withSonarQubeEnv('sonarqube') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=wink-dashboard \
+                                -Dsonar.projectName=wink-dashboard \
+                                -Dsonar.sources=lib
                             """
                         }
                     }
