@@ -4,6 +4,7 @@ pipeline {
     }
 
     stages {
+
         stage('Multi-SCM Checkout') {
             steps {
 
@@ -26,6 +27,25 @@ pipeline {
                     echo "===== WINK DASHBOARD ====="
                     ls -la wink_dashboard
                 '''
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('assignment5/react-app') {
+                    script {
+                        def scannerHome = tool 'sonar-scanner'
+
+                        withSonarQubeEnv('sonarqube') {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=assignment5 \
+                                -Dsonar.projectName=assignment5 \
+                                -Dsonar.sources=.
+                            """
+                        }
+                    }
+                }
             }
         }
     }
