@@ -6,9 +6,8 @@ pipeline {
 
     stages {
 
-        stage('Multi-SCM Checkout') {
+        stage('Checkout') {
             steps {
-
                 dir('assignment5') {
                     git branch: 'master',
                         credentialsId: 'github-credentials',
@@ -20,24 +19,14 @@ pipeline {
                         credentialsId: 'github-credentials',
                         url: 'https://github.com/arslankareem89/wink_dashboard.git'
                 }
-
-                sh '''
-                    echo "===== ASSIGNMENT 5 ====="
-                    ls -la assignment5
-
-                    echo "===== WINK DASHBOARD ====="
-                    ls -la wink_dashboard
-                '''
             }
         }
 
-        stage('SonarQube - Assignment 5') {
+        stage('SonarQube') {
             steps {
-
                 dir('assignment5/react-app') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
-
                         withSonarQubeEnv('sonarqube') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
@@ -48,16 +37,10 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-
-        stage('SonarQube - Wink Dashboard') {
-            steps {
 
                 dir('wink_dashboard') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
-
                         withSonarQubeEnv('sonarqube') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
@@ -71,22 +54,14 @@ pipeline {
             }
         }
 
-        stage('Docker Build - React') {
+        stage('Docker Build') {
             steps {
-
-                sh '''
-                    echo "===== BUILD ASSIGNMENT 5 IMAGE ====="
-
-                    cd assignment5
-                    docker build -t assignment5:latest .
-                    docker images assignment5
-                '''
+                sh 'cd assignment5 && docker build -t assignment5:latest .'
             }
         }
 
         stage('Docker Push') {
             steps {
-
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
@@ -94,17 +69,10 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-
                     sh '''
-                        echo "$DOCKER_PASS" | docker login \
-                            -u "$DOCKER_USER" \
-                            --password-stdin
-
-                        docker tag assignment5:latest \
-                            arslankareem89/assignment5:latest
-
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag assignment5:latest arslankareem89/assignment5:latest
                         docker push arslankareem89/assignment5:latest
-
                         docker logout
                     '''
                 }
@@ -113,35 +81,31 @@ pipeline {
 
         stage('Deploy') {
             steps {
-
                 sh '''
-                    echo "===== DEPLOY ASSIGNMENT 5 ====="
-
                     docker pull arslankareem89/assignment5:latest
-
                     docker stop assignment5 2>/dev/null || true
                     docker rm assignment5 2>/dev/null || true
-
-                    docker run -d \
-                        --name assignment5 \
-                        --restart unless-stopped \
-                        -p 80:80 \
-                        arslankareem89/assignment5:latest
-
-                    docker ps
+                    docker run -d --name assignment5 --restart unless-stopped -p 80:80 arslankareem89/assignment5:latest
                 '''
             }
         }
     }
 
     post {
-
         success {
-            echo 'PIPELINE SUCCESSFUL'
+            emailext(
+                to: 'arslankararslan.kareem@camp2.tkxel.com',
+                subject: 'Assignment 06 - SUCCESS',
+                body: 'Pipeline completed successfully.\nhttp://13.201.188.255/'
+            )
         }
 
         failure {
-            echo 'PIPELINE FAILED'
+            emailext(
+                to: 'arslankararslan.kareem@camp2.tkxel.com',
+                subject: 'Assignment 06 - FAILED',
+                body: 'Pipeline failed.'
+            )
         }
     }
 }
