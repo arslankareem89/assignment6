@@ -1,4 +1,5 @@
 pipeline {
+
     agent {
         label 'jenkins-agent1'
     }
@@ -7,6 +8,7 @@ pipeline {
 
         stage('Multi-SCM Checkout') {
             steps {
+
                 dir('assignment5') {
                     git branch: 'master',
                         credentialsId: 'github-credentials',
@@ -31,6 +33,7 @@ pipeline {
 
         stage('SonarQube - Assignment 5') {
             steps {
+
                 dir('assignment5/react-app') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
@@ -50,6 +53,7 @@ pipeline {
 
         stage('SonarQube - Wink Dashboard') {
             steps {
+
                 dir('wink_dashboard') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
@@ -69,12 +73,12 @@ pipeline {
 
         stage('Docker Build - React') {
             steps {
+
                 sh '''
                     echo "===== BUILD ASSIGNMENT 5 IMAGE ====="
 
                     cd assignment5
                     docker build -t assignment5:latest .
-
                     docker images assignment5
                 '''
             }
@@ -82,6 +86,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
+
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-credentials',
@@ -89,6 +94,7 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
+
                     sh '''
                         echo "$DOCKER_PASS" | docker login \
                             -u "$DOCKER_USER" \
@@ -104,9 +110,32 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            steps {
+
+                sh '''
+                    echo "===== DEPLOY ASSIGNMENT 5 ====="
+
+                    docker pull arslankareem89/assignment5:latest
+
+                    docker stop assignment5 2>/dev/null || true
+                    docker rm assignment5 2>/dev/null || true
+
+                    docker run -d \
+                        --name assignment5 \
+                        --restart unless-stopped \
+                        -p 80:80 \
+                        arslankareem89/assignment5:latest
+
+                    docker ps
+                '''
+            }
+        }
     }
 
     post {
+
         success {
             echo 'PIPELINE SUCCESSFUL'
         }
