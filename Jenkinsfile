@@ -92,20 +92,16 @@ pipeline {
     }
 
     post {
-        success {
-            emailext(
-                to: 'arslankararslan.kareem@camp2.tkxel.com',
+    success {
+        emailext to: 'arslan.kareem@camp2.tkxel.com',
                 subject: 'Assignment 06 - SUCCESS',
                 body: 'Pipeline completed successfully.'
-            )
-        }
+    }
 
-        failure {
-            emailext(
-                to: 'arslankararslan.kareem@camp2.tkxel.com',
+    failure {
+        emailext to: 'arslan.kareem@camp2.tkxel.com',
                 subject: 'Assignment 06 - FAILED',
                 body: 'Pipeline failed.'
-            )
-        }
     }
+}
 } 
