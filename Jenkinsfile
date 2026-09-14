@@ -27,6 +27,7 @@ pipeline {
                 dir('assignment5/react-app') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
+
                         withSonarQubeEnv('sonarqube') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
@@ -41,6 +42,7 @@ pipeline {
                 dir('wink_dashboard') {
                     script {
                         def scannerHome = tool 'sonar-scanner'
+
                         withSonarQubeEnv('sonarqube') {
                             sh """
                                 ${scannerHome}/bin/sonar-scanner \
@@ -89,16 +91,23 @@ pipeline {
                 '''
             }
         }
-    
-
-    stage('Email Test') {
-    steps {
-        emailext(
-            to: 'arslan.kareem@camp2.tkxel.com',
-            subject: 'Jenkins Email Test',
-            body: 'Email from assignment6 pipeline.'
-        )
     }
-}
+
+    post {
+        success {
+            emailext(
+                to: 'arslan.kareem@camp2.tkxel.com',
+                subject: 'Assignment 06 - SUCCESS',
+                body: 'Pipeline completed successfully.'
+            )
+        }
+
+        failure {
+            emailext(
+                to: 'arslan.kareem@camp2.tkxel.com',
+                subject: 'Assignment 06 - FAILED',
+                body: 'Pipeline failed.'
+            )
+        }
     }
 }
