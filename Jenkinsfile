@@ -89,7 +89,7 @@ pipeline {
                 '''
             }
         }
-    }
+    
 
     stage('Email Test') {
     steps {
@@ -98,5 +98,7 @@ pipeline {
             subject: 'Jenkins Email Test',
             body: 'Email from assignment6 pipeline.'
         )
+    }
+}
     }
 }
