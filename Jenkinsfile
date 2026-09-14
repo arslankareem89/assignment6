@@ -91,17 +91,12 @@ pipeline {
         }
     }
 
-    post {
-    success {
-        emailext to: 'arslan.kareem@camp2.tkxel.com',
-                subject: 'Assignment 06 - SUCCESS',
-                body: 'Pipeline completed successfully.'
-    }
-
-    failure {
-        emailext to: 'arslan.kareem@camp2.tkxel.com',
-                subject: 'Assignment 06 - FAILED',
-                body: 'Pipeline failed.'
+    stage('Email Test') {
+    steps {
+        emailext(
+            to: 'arslan.kareem@camp2.tkxel.com',
+            subject: 'Jenkins Email Test',
+            body: 'Email from assignment6 pipeline.'
+        )
     }
 }
-} 
