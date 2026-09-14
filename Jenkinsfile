@@ -96,7 +96,7 @@ pipeline {
             emailext(
                 to: 'arslankararslan.kareem@camp2.tkxel.com',
                 subject: 'Assignment 06 - SUCCESS',
-                body: 'Pipeline completed successfully.\nhttp://13.201.188.255/'
+                body: 'Pipeline completed successfully.'
             )
         }
 
